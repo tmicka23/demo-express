@@ -10,7 +10,7 @@ let todos = [
   }
 ]
 
-const permittedParams = (req, res, next) => {
+const permittedParams = (req, _res, next) => {
   const permittedKeys = ['text', 'done']
   const unpermittedKeys = difference(keys(req.body), permittedKeys)
   if (unpermittedKeys) {
@@ -19,6 +19,13 @@ const permittedParams = (req, res, next) => {
   }
   next()
 }
+
+const todoRequestSeparator = (_req, _res, next) => {
+  console.log('------------------------------------------------------------------')
+  next()
+}
+
+router.use(todoRequestSeparator)
 
 router.get('/', (_, res) => {
   res.json(todos)
