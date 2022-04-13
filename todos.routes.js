@@ -1,0 +1,52 @@
+const express = require('express')
+const router = express.Router()
+
+let todos = [
+  {
+    id: 1,
+    text: 'Create a course for learn NodeJs',
+    done: true
+  }
+]
+
+router.get('/', (_, res) => {
+  res.json(todos)
+})
+
+router.get('/:id', (req, res) => {
+  const todo = todos.find((item) => item.id === parseInt(req.params.id))
+  if (todo) {
+    res.json(todo)
+  } else {
+    res.sendStatus(404)
+  }
+})
+
+router.post('/', (req, res) => {
+  const lastTodo = todos[todos.length - 1]
+  const newTodo = {id: lastTodo.id + 1,...req.body}
+  todos.push(newTodo)
+  res.status(201).json(newTodo)
+})
+
+router.put('/:id', (req, res) => {
+  let todoIndex = todos.findIndex((item) => item.id === parseInt(req.params.id))
+  if (todoIndex >= 0) {
+    todos[todoIndex] = {...todos[todoIndex], ...req.body}
+    res.json(todos[todoIndex])
+  } else {
+    res.sendStatus(404)
+  }
+})
+
+router.delete('/:id', (req, res) => {
+  const todo = todos.find((item) => item.id === parseInt(req.params.id))
+  if (todo) {
+    todos = todos.filter((item) => item.id !== todo.id)
+    res.sendStatus(204)
+  } else {
+    res.sendStatus(404)
+  }
+})
+
+module.exports = router
