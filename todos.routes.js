@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const { difference, keys } = require('lodash')
 
 let todos = [
   {
@@ -8,6 +9,16 @@ let todos = [
     done: true
   }
 ]
+
+const permittedParams = (req, res, next) => {
+  const permittedKeys = ['text', 'done']
+  const unpermittedKeys = difference(keys(req.body), permittedKeys)
+  if (unpermittedKeys) {
+    console.log('unpermitted params :', unpermittedKeys)
+    unpermittedKeys.forEach((key) => delete req.body[key])
+  }
+  next()
+}
 
 router.get('/', (_, res) => {
   res.json(todos)
@@ -22,14 +33,14 @@ router.get('/:id', (req, res) => {
   }
 })
 
-router.post('/', (req, res) => {
+router.post('/', permittedParams, (req, res) => {
   const lastTodo = todos[todos.length - 1]
   const newTodo = {id: lastTodo.id + 1,...req.body}
   todos.push(newTodo)
   res.status(201).json(newTodo)
 })
 
-router.put('/:id', (req, res) => {
+router.put('/:id', permittedParams, (req, res) => {
   let todoIndex = todos.findIndex((item) => item.id === parseInt(req.params.id))
   if (todoIndex >= 0) {
     todos[todoIndex] = {...todos[todoIndex], ...req.body}

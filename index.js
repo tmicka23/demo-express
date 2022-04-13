@@ -7,7 +7,14 @@ const port = 3000
 
 const app = express()
 
+const logPath  = (req, _res, next) => {
+  console.log(`Starting ${req.method} ${req.originalUrl}`)
+  console.log('with params :', req.body)
+  next()
+}
+
 app.use(bodyParser.json())
+app.use(logPath)
 app.use('/todos', todosRouter)
 
 
