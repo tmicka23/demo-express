@@ -2,13 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { difference, keys } = require('lodash')
 
-let todos = [
-  {
-    id: 1,
-    text: 'Create a course for learn NodeJs',
-    done: true
-  }
-]
+const Todo = require('./todo.model')
 
 const permittedParams = (req, _res, next) => {
   const permittedKeys = ['text', 'done']
@@ -27,12 +21,13 @@ const todoRequestSeparator = (_req, _res, next) => {
 
 router.use(todoRequestSeparator)
 
-router.get('/', (_, res) => {
+router.get('/', async (_, res) => {
+  const todos = await Todo.findAll()
   res.json(todos)
 })
 
-router.get('/:id', (req, res) => {
-  const todo = todos.find((item) => item.id === parseInt(req.params.id))
+router.get('/:id', async (req, res) => {
+  const todo = await Todo.findOne(req.params.id)
   if (todo) {
     res.json(todo)
   } else {
@@ -40,31 +35,19 @@ router.get('/:id', (req, res) => {
   }
 })
 
-router.post('/', permittedParams, (req, res) => {
-  const lastTodo = todos[todos.length - 1]
-  const newTodo = {id: lastTodo.id + 1,...req.body}
-  todos.push(newTodo)
-  res.status(201).json(newTodo)
+router.post('/', permittedParams, async (req, res) => {
+  const todo = await Todo.create(req.body)
+  res.status(201).json(todo)
 })
 
-router.put('/:id', permittedParams, (req, res) => {
-  let todoIndex = todos.findIndex((item) => item.id === parseInt(req.params.id))
-  if (todoIndex >= 0) {
-    todos[todoIndex] = {...todos[todoIndex], ...req.body}
-    res.json(todos[todoIndex])
-  } else {
-    res.sendStatus(404)
-  }
+router.put('/:id', permittedParams, async (req, res) => {
+  const todo = await Todo.update(req.params.id, req.body)
+  res.json(todo)
 })
 
-router.delete('/:id', (req, res) => {
-  const todo = todos.find((item) => item.id === parseInt(req.params.id))
-  if (todo) {
-    todos = todos.filter((item) => item.id !== todo.id)
-    res.sendStatus(204)
-  } else {
-    res.sendStatus(404)
-  }
+router.delete('/:id', async (req, res) => {
+  await Todo.delete(req.params.id)
+  res.sendStatus(204)
 })
 
 module.exports = router
